@@ -14,6 +14,12 @@
 
 ---
 
+## ⬆️ Upgrading from v1.x
+
+v2.0 is a breaking release targeting Spatie laravel-activitylog v5. See **[UPGRADING.md](UPGRADING.md)** for the full migration guide.
+
+---
+
 ## ✨ Features
 
 * Table, Timeline & Analytics dashboards
@@ -27,10 +33,10 @@
 
 ## 🗒️ Requirements
 
-* PHP ≥ 8.1
-* Laravel 10 | 11 | 12
-* [spatie/laravel-activitylog](https://github.com/spatie/laravel-activitylog) ≥ 4.8 (already logging your activities)
-* Database table `activity_log` with Spatie’s default columns
+* PHP ≥ 8.4
+* Laravel 12 | 13
+* [spatie/laravel-activitylog](https://github.com/spatie/laravel-activitylog) ≥ 5.0 (already logging your activities)
+* Database table `activity_log` with Spatie v5’s schema (includes `attribute_changes` column)
 
 ### Optional (for export)
 

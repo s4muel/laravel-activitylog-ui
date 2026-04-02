@@ -22,22 +22,33 @@ class ActivityLogSeeder extends Seeder
                 ->event('created')
                 ->log('User account created');
 
-            // User updated activity with properties
+            // User updated activity with custom properties
             activity()
                 ->causedBy($user)
                 ->performedOn($user)
                 ->event('updated')
                 ->withProperties([
-                    'old' => [
-                        'name' => 'Old Name ' . $index,
-                        'email' => 'old' . $index . '@example.com'
-                    ],
-                    'attributes' => [
-                        'name' => $user->name,
-                        'email' => $user->email
-                    ]
+                    'source' => 'profile_settings',
+                    'ip_address' => '192.168.1.' . rand(1, 255),
                 ])
                 ->log('User profile updated');
+
+            // Manually seed attribute_changes for demo data
+            $lastActivity = Activity::latest('id')->first();
+            if ($lastActivity) {
+                $lastActivity->update([
+                    'attribute_changes' => [
+                        'old' => [
+                            'name' => 'Old Name ' . $index,
+                            'email' => 'old' . $index . '@example.com',
+                        ],
+                        'attributes' => [
+                            'name' => $user->name,
+                            'email' => $user->email,
+                        ],
+                    ],
+                ]);
+            }
 
             // Login activity
             for ($i = 0; $i < rand(1, 5); $i++) {

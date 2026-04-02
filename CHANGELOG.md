@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-04-03
+
+### Breaking Changes
+- Requires PHP 8.4+, Laravel 12+, and Spatie laravel-activitylog v5
+- Batch UUID feature removed entirely (Spatie v5 removes batch system)
+- Activity attribute changes now read from `attribute_changes` column instead of `properties`
+- `hasPropertyChanges()` deprecated in favor of `hasAttributeChanges()`
+
+### Changed
+- Properties column in UI now shows only custom data; attribute changes displayed separately
+- Timeline view and detail modal now show "Attribute Changes" and "Custom Properties" as distinct sections
+- Search now covers `attribute_changes` column in addition to `properties` and `description`
+- Export JSON output now includes `attribute_changes` field
+- Schema column check now uses the model's database connection instead of the default connection
+
+### Added
+- `restored` event color in analytics chart defaults
+- Separate "Attribute Changes" display section in activity detail modal
+- Separate "Custom Properties" display section in timeline and detail views
+- Legacy fallback: `hasAttributeChanges()` and `getFormattedChangesAttribute()` fall back to `properties.old`/`properties.attributes` for unmigrated rows
+- Frontend legacy fallback: timeline and detail modal resolve changes from `attribute_changes` or `properties` transparently
+- Legacy diff keys (`old`, `attributes`) are filtered from the Custom Properties panel to prevent duplication
+
+### Removed
+- Batch UUID filter from filter panel, table view, and all JavaScript state management
+- `FiltersBatchUuid` trait
+- `sanitizeUuid()` method from controller
+
 ## [1.3.1] - 2026-04-02
 
 ### Fixed

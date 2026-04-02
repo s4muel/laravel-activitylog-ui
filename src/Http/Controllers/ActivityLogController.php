@@ -5,7 +5,6 @@ namespace MuhammadSadeeq\ActivitylogUi\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Routing\Controller;
 use MuhammadSadeeq\ActivitylogUi\Services\ActivitylogService;
@@ -109,7 +108,7 @@ class ActivityLogController extends Controller
             'data' => [
                 'activity' => $activity,
                 'formatted_changes' => $activity->formatted_changes,
-                'has_changes' => $activity->hasPropertyChanges(),
+                'has_changes' => $activity->hasAttributeChanges(),
             ],
         ]);
     }
@@ -516,7 +515,6 @@ class ActivityLogController extends Controller
             'causer_id' => $this->sanitizeId($request->get('causer_id')),
             'subject_type' => $request->get('subject_type'),
             'subject_id' => $this->sanitizeId($request->get('subject_id')),
-            'batch_uuid' => $this->sanitizeUuid($request->get('batch_uuid')),
             'event_types' => $this->getArrayFromRequest($request, 'event_types'),
             'property_key' => $request->get('property_key'),
         ];
@@ -554,21 +552,6 @@ class ActivityLogController extends Controller
         }
 
         return null;
-    }
-
-    private function sanitizeUuid(mixed $uuid): ?string
-    {
-        if (! is_string($uuid)) {
-            return null;
-        }
-
-        $uuid = trim($uuid);
-
-        if ($uuid === '' || ! Str::isUuid($uuid)) {
-            return null;
-        }
-
-        return $uuid;
     }
 
     /**

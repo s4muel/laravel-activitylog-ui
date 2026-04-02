@@ -191,6 +191,7 @@ class ExportService
                     'causer_type' => $activity->causer_type,
                     'causer_id' => $activity->causer_id,
                     'properties' => $activity->properties,
+                    'attribute_changes' => $activity->attribute_changes,
                     'created_at' => $activity->created_at->toISOString(),
                     'causer_name' => $activity->causer_name,
                     'subject_name' => $activity->subject_name,
@@ -226,7 +227,7 @@ class ExportService
                         $activity->subject_type . ' #' . $activity->subject_id :
                         'N/A',
                     'description' => $activity->description,
-                    'changes' => $activity->hasPropertyChanges() ?
+                    'changes' => $activity->hasAttributeChanges() ?
                         $activity->getChangesSummary() :
                         'No changes tracked',
                     'properties' => json_encode($activity->properties),

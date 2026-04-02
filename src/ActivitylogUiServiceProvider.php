@@ -10,7 +10,7 @@ class ActivitylogUiServiceProvider extends ServiceProvider
     /**
      * Package version.
      */
-    public const VERSION = '1.3.1';
+    public const VERSION = '2.0.0';
     /**
      * Register any application services.
      */

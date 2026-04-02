@@ -186,7 +186,7 @@
                 </td>
                 <td class="description">{{ $activity->description }}</td>
                 <td class="changes">
-                    @if($activity->hasPropertyChanges())
+                    @if($activity->hasAttributeChanges())
                         {{ $activity->getChangesSummary() }}
                     @else
                         No changes tracked

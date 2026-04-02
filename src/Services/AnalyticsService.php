@@ -5,12 +5,10 @@ namespace MuhammadSadeeq\ActivitylogUi\Services;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use MuhammadSadeeq\ActivitylogUi\Concerns\FiltersBatchUuid;
 use MuhammadSadeeq\ActivitylogUi\Models\Activity;
 
 class AnalyticsService
 {
-    use FiltersBatchUuid;
     /**
      * Get dashboard summary statistics.
      */
@@ -84,10 +82,6 @@ class AnalyticsService
 
         if (!empty($filters['subject_type'])) {
             $query->where('subject_type', $filters['subject_type']);
-        }
-
-        if (! empty($filters['batch_uuid'])) {
-            $this->applyBatchUuidFilter($query, $filters['batch_uuid']);
         }
 
         return $query;

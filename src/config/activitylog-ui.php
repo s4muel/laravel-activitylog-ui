@@ -181,6 +181,7 @@ return [
             'created' => '#10b981',
             'updated' => '#3b82f6',
             'deleted' => '#ef4444',
+            'restored' => '#f59e0b',
             'custom' => '#8b5cf6',
         ],
     ],

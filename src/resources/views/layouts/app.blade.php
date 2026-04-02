@@ -118,7 +118,6 @@
                             event_types: [],
                             causer_id: null,
                             subject_type: '',
-                            batch_uuid: '',
                         };
                     },
 
@@ -326,7 +325,6 @@
                         localStorage.removeItem('activitylog_event_types');
                         localStorage.removeItem('activitylog_causer_id');
                         localStorage.removeItem('activitylog_subject_type');
-                        localStorage.removeItem('activitylog_batch_uuid');
                         localStorage.removeItem('activitylog_selected_causer');
 
                         // Reset filters
@@ -347,16 +345,6 @@
                         }
                     },
 
-                    setBatchFilter(batchUuid) {
-                        if (!batchUuid) {
-                            return;
-                        }
-
-                        this.showAdvanced = true;
-                        this.filters.batch_uuid = batchUuid;
-                        this.applyFilters();
-                    },
-
                     @if(config('activitylog-ui.features.saved_views', true))
                     showSaveViewModal() {
                         window.dispatchEvent(new CustomEvent('show-save-view-modal', {
@@ -374,7 +362,6 @@
                         const savedEventTypes = localStorage.getItem('activitylog_event_types');
                         const savedCauserId = localStorage.getItem('activitylog_causer_id');
                         const savedSubjectType = localStorage.getItem('activitylog_subject_type');
-                        const savedBatchUuid = localStorage.getItem('activitylog_batch_uuid');
                         const savedSelectedCauser = localStorage.getItem('activitylog_selected_causer');
 
                         if (savedPreset) this.filters.date_preset = savedPreset;
@@ -382,7 +369,6 @@
                         if (savedEndDate) this.filters.end_date = savedEndDate;
                         if (savedSearch) this.filters.search = savedSearch;
                         if (savedSubjectType) this.filters.subject_type = savedSubjectType;
-                        if (savedBatchUuid) this.filters.batch_uuid = savedBatchUuid;
                         if (savedCauserId) this.filters.causer_id = savedCauserId ? parseInt(savedCauserId) : null;
 
                         if (savedEventTypes) {

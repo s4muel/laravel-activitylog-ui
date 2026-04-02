@@ -132,24 +132,49 @@
                             </div>
                         </div>
 
-                        <!-- Enhanced properties -->
-                        <div x-show="activity.properties && Object.keys(activity.properties).length > 0"
+                        <!-- Attribute Changes (with legacy fallback to properties) -->
+                        <div x-data="{
+                                 get changes() {
+                                     return activity.attribute_changes || (activity.properties && (activity.properties.old || activity.properties.attributes) ? { old: activity.properties.old, attributes: activity.properties.attributes } : null);
+                                 }
+                             }"
+                             x-show="changes"
                              class="bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-600">
                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
-                                    <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                    Activity Properties
+                                    <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                    </svg>
+                                    Attribute Changes
                                 </h4>
                             </div>
                             <div class="p-4">
                                 <div class="bg-gray-900 dark:bg-gray-900 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                                     <pre class="text-sm text-green-400 dark:text-green-300 whitespace-pre-wrap overflow-x-auto font-mono"
-                                         x-text="JSON.stringify(activity.properties, null, 2)"></pre>
-                                    </div>
+                                         x-text="JSON.stringify(changes, null, 2)"></pre>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Custom Properties (excluding legacy diff keys) -->
+                        <template x-if="activity.properties && Object.keys(activity.properties).filter(k => k !== 'old' && k !== 'attributes').length > 0">
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div class="p-4 border-b border-gray-200 dark:border-gray-600">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Custom Properties
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div class="bg-gray-900 dark:bg-gray-900 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
+                                        <pre class="text-sm text-green-400 dark:text-green-300 whitespace-pre-wrap overflow-x-auto font-mono"
+                                             x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </template>
                 </div>

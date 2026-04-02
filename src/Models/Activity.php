@@ -5,18 +5,24 @@ namespace MuhammadSadeeq\ActivitylogUi\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
 class Activity extends SpatieActivity
 {
-    /**
-     * The attributes that should be cast.
-     */
-    protected $casts = [
-        'properties' => 'array',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected static ?bool $hasAttributeChangesColumn = null;
+
+    public static function hasAttributeChangesColumn(): bool
+    {
+        if (static::$hasAttributeChangesColumn === null) {
+            $model = new static();
+
+            static::$hasAttributeChangesColumn = Schema::connection($model->getConnectionName())
+                ->hasColumn($model->getTable(), 'attribute_changes');
+        }
+
+        return static::$hasAttributeChangesColumn;
+    }
 
     /**
      * Get the causer (user who performed the activity).
@@ -121,8 +127,13 @@ class Activity extends SpatieActivity
 
         return $query->where(function (Builder $q) use ($search) {
             $q->where('description', 'like', "%{$search}%")
-              ->orWhere('properties', 'like', "%{$search}%")
-              ->orWhereHas('causer', function (Builder $causerQuery) use ($search) {
+              ->orWhere('properties', 'like', "%{$search}%");
+
+            if (static::hasAttributeChangesColumn()) {
+                $q->orWhere('attribute_changes', 'like', "%{$search}%");
+            }
+
+            $q->orWhereHas('causer', function (Builder $causerQuery) use ($search) {
                   $causerQuery->where('name', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
               });
@@ -159,23 +170,40 @@ class Activity extends SpatieActivity
 
     /**
      * Get formatted changes for display.
+     *
+     * Handles all event shapes: created (attributes only), deleted (old only),
+     * and updated (both old and attributes). Falls back to legacy properties
+     * for rows not yet migrated to the attribute_changes column.
      */
     public function getFormattedChangesAttribute(): array
     {
-        $properties = $this->properties ?? [];
-        $changes = [];
+        $data = $this->attribute_changes;
 
-        if (isset($properties['old'], $properties['attributes'])) {
-            $old = $properties['old'];
-            $new = $properties['attributes'];
+        if ($data === null) {
+            $properties = $this->properties;
 
-            foreach ($new as $key => $value) {
-                $changes[] = [
-                    'field' => $key,
-                    'old' => $old[$key] ?? null,
-                    'new' => $value,
-                ];
+            if ($properties === null) {
+                return [];
             }
+
+            if (!isset($properties['old']) && !isset($properties['attributes'])) {
+                return [];
+            }
+
+            $data = $properties;
+        }
+
+        $changes = [];
+        $old = $data['old'] ?? [];
+        $new = $data['attributes'] ?? [];
+        $allKeys = array_unique(array_merge(array_keys($old), array_keys($new)));
+
+        foreach ($allKeys as $key) {
+            $changes[] = [
+                'field' => $key,
+                'old' => $old[$key] ?? null,
+                'new' => $new[$key] ?? null,
+            ];
         }
 
         return $changes;
@@ -208,12 +236,28 @@ class Activity extends SpatieActivity
     }
 
     /**
-     * Check if activity has property changes.
+     * Check if activity has attribute changes.
+     *
+     * Falls back to legacy properties for rows not yet migrated.
      */
+    public function hasAttributeChanges(): bool
+    {
+        $data = $this->attribute_changes;
+
+        if ($data !== null) {
+            return isset($data['old']) || isset($data['attributes']);
+        }
+
+        $properties = $this->properties;
+
+        return $properties !== null
+            && (isset($properties['old']) || isset($properties['attributes']));
+    }
+
+    /** @deprecated Use hasAttributeChanges() instead */
     public function hasPropertyChanges(): bool
     {
-        $properties = $this->properties ?? [];
-        return isset($properties['old']) && isset($properties['attributes']);
+        return $this->hasAttributeChanges();
     }
 
     /**
@@ -221,7 +265,7 @@ class Activity extends SpatieActivity
      */
     public function getChangesSummary(): string
     {
-        if (!$this->hasPropertyChanges()) {
+        if (!$this->hasAttributeChanges()) {
             return 'No changes tracked';
         }
 

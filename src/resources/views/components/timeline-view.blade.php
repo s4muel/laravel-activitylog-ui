@@ -101,9 +101,14 @@
                         <!-- Enhanced description -->
                         <div class="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed" x-text="activity.description"></div>
 
-                        <!-- Enhanced properties toggle -->
-                        <div x-show="activity.properties && Object.keys(activity.properties).length > 0"
-                             x-data="{ expanded: false }"
+                        <!-- Attribute Changes (with legacy fallback to properties) -->
+                        <div x-data="{
+                                 expanded: false,
+                                 get changes() {
+                                     return activity.attribute_changes || (activity.properties && (activity.properties.old || activity.properties.attributes) ? { old: activity.properties.old, attributes: activity.properties.attributes } : null);
+                                 }
+                             }"
+                             x-show="changes"
                              class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <button @click="expanded = !expanded"
                                     class="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md transition-colors duration-150">
@@ -112,13 +117,13 @@
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
-                                <span x-text="expanded ? 'Hide' : 'Show'"></span> Details
+                                <span x-text="expanded ? 'Hide' : 'Show'"></span> Changes
                             </button>
 
                             <div x-show="expanded"
                                  x-collapse
                                  class="mt-3 space-y-3">
-                                <template x-if="activity.properties.old">
+                                <template x-if="changes.old">
                                     <div>
                                         <h5 class="text-xs font-semibold text-red-600 dark:text-red-400 mb-2 flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,11 +132,11 @@
                                             Previous Values
                                         </h5>
                                         <pre class="text-xs bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-md text-red-800 dark:text-red-300 overflow-x-auto"
-                                             x-text="JSON.stringify(activity.properties.old, null, 2)"></pre>
+                                             x-text="JSON.stringify(changes.old, null, 2)"></pre>
                                     </div>
                                 </template>
 
-                                <template x-if="activity.properties.attributes">
+                                <template x-if="changes.attributes">
                                     <div>
                                         <h5 class="text-xs font-semibold text-green-600 dark:text-green-400 mb-2 flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,9 +145,31 @@
                                             New Values
                                         </h5>
                                         <pre class="text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 rounded-md text-green-800 dark:text-green-300 overflow-x-auto"
-                                             x-text="JSON.stringify(activity.properties.attributes, null, 2)"></pre>
+                                             x-text="JSON.stringify(changes.attributes, null, 2)"></pre>
                                     </div>
                                 </template>
+                            </div>
+                        </div>
+
+                        <!-- Custom Properties (excluding legacy diff keys) -->
+                        <div x-show="activity.properties && Object.keys(activity.properties).filter(k => k !== 'old' && k !== 'attributes').length > 0"
+                             x-data="{ propsExpanded: false }"
+                             class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <button @click="propsExpanded = !propsExpanded"
+                                    class="flex items-center text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded-md transition-colors duration-150">
+                                <svg :class="propsExpanded ? 'rotate-90' : ''"
+                                     class="w-3 h-3 mr-1 transform transition-transform duration-150"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                <span x-text="propsExpanded ? 'Hide' : 'Show'"></span> Properties
+                            </button>
+
+                            <div x-show="propsExpanded"
+                                 x-collapse
+                                 class="mt-3">
+                                <pre class="text-xs bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 p-3 rounded-md text-gray-800 dark:text-gray-300 overflow-x-auto"
+                                     x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
                             </div>
                         </div>
                     </div>

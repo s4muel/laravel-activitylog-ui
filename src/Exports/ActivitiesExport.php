@@ -66,7 +66,7 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
                     $activity->subject_type . ' #' . $activity->subject_id :
                     'N/A',
                 'description' => $activity->description,
-                'changes' => $activity->hasPropertyChanges() ?
+                'changes' => $activity->hasAttributeChanges() ?
                     $activity->getChangesSummary() :
                     'No changes tracked',
                 'properties' => json_encode($activity->properties),
