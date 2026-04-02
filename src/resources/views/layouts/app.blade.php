@@ -123,7 +123,7 @@
                     },
 
                     // Filter state
-                    filters: this.defaultFilters(),
+                    filters: {},
 
                     // Data
                     @if(config('activitylog-ui.features.saved_views', true))
@@ -147,6 +147,10 @@
                     // Initialization
                     async init() {
                         if (this.initialized) return;
+
+                        // init state
+                        this.filters = this.defaultFilters();
+                        
                         this.initialized = true;
 
                         @if(config('activitylog-ui.features.saved_views', true))
