@@ -169,7 +169,7 @@
                                  x-collapse
                                  class="mt-3">
                                 <pre class="text-xs bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 p-3 rounded-md text-gray-800 dark:text-gray-300 overflow-x-auto"
-                                     x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
+                                     x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties || {}).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
                             </div>
                         </div>
                     </div>

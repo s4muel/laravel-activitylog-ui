@@ -8,8 +8,12 @@
     <title>@yield('title') - {{ config('activitylog-ui.ui.brand', 'ActivityLog UI') }}</title>
 
     <!-- Favicon -->
+    @if(file_exists(public_path('vendor/activitylog-ui/images/favicon.svg')))
     <link rel="icon" type="image/svg+xml" href="{{ asset('vendor/activitylog-ui/images/favicon.svg') }}">
+    @endif
+    @if(file_exists(public_path('vendor/activitylog-ui/images/favicon.ico')))
     <link rel="icon" type="image/x-icon" href="{{ asset('vendor/activitylog-ui/images/favicon.ico') }}">
+    @endif
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -185,24 +189,20 @@
                                 }
                             });
 
-                            if (response.ok) {
-                                const data = await response.json();
-                                this.availableCausers = data.causers || [];
-                                this.availableSubjectTypes = data.subject_types || this.availableSubjectTypes;
+                            const data = await window.ActivitylogUi.parseJsonResponse(response, 'Loading filter options');
+                            this.availableCausers = data.causers || [];
+                            this.availableSubjectTypes = data.subject_types || this.availableSubjectTypes;
 
-                                // Process event types with dynamic styling
-                                if (data.event_types) {
-                                    this.availableEventTypes = data.event_types.map(eventType => {
-                                        return {
-                                            value: eventType.value,
-                                            label: eventType.label,
-                                            color: `bg-${window.ActivityTypeStyler.getColor(eventType.value)}-500`,
-                                            styling: window.ActivityTypeStyler.getEventTypeStyling(eventType.value)
-                                        };
-                                    });
-                                }
-                            } else {
-                                throw new Error('Failed to load filter options');
+                            // Process event types with dynamic styling
+                            if (data.event_types) {
+                                this.availableEventTypes = data.event_types.map(eventType => {
+                                    return {
+                                        value: eventType.value,
+                                        label: eventType.label,
+                                        color: `bg-${window.ActivityTypeStyler.getColor(eventType.value)}-500`,
+                                        styling: window.ActivityTypeStyler.getEventTypeStyling(eventType.value)
+                                    };
+                                });
                             }
 
                             this.filteredCausers = this.availableCausers;
@@ -399,10 +399,8 @@
                                 }
                             });
 
-                            if (response.ok) {
-                                const result = await response.json();
-                                this.savedViews = result.data || [];
-                            }
+                            const result = await window.ActivitylogUi.parseJsonResponse(response, 'Loading saved views');
+                            this.savedViews = result.data || [];
                         } catch (error) {
                             console.error('Failed to load saved views:', error);
                             if (window.notify) {
@@ -424,13 +422,10 @@
                                 body: JSON.stringify({ view_id: viewId })
                             });
 
-                            if (response.ok) {
-                                await this.loadSavedViews();
-                                if (window.notify) {
-                                    window.notify.success('Success', 'View deleted successfully');
-                                }
-                            } else {
-                                throw new Error('Failed to delete view');
+                            await window.ActivitylogUi.parseJsonResponse(response, 'Deleting saved view');
+                            await this.loadSavedViews();
+                            if (window.notify) {
+                                window.notify.success('Success', 'View deleted successfully');
                             }
                         } catch (error) {
                             console.error('Delete view error:', error);
@@ -509,23 +504,19 @@
                                 }
                             });
 
-                            if (response.ok) {
-                                const result = await response.json();
-                                const data = result.data || {};
+                            const result = await window.ActivitylogUi.parseJsonResponse(response, 'Loading analytics');
+                            const data = result.data || {};
 
-                                this.stats = data.stats || {
-                                    total: '0',
-                                    today: '0',
-                                    active_users: '0',
-                                    this_week: '0'
-                                };
+                            this.stats = data.stats || {
+                                total: '0',
+                                today: '0',
+                                active_users: '0',
+                                this_week: '0'
+                            };
 
-                                this.eventTypes = data.event_types || [];
-                                this.topUsers = data.top_users || [];
-                                this.timeline = data.timeline || [];
-                            } else {
-                                throw new Error('Failed to load analytics');
-                            }
+                            this.eventTypes = data.event_types || [];
+                            this.topUsers = data.top_users || [];
+                            this.timeline = data.timeline || [];
                         } catch (error) {
                             console.error('Error loading analytics:', error);
                             // Fallback to mock data
@@ -699,6 +690,28 @@
             }
         };
 
+        window.ActivitylogUi = {
+            async parseJsonResponse(response, context) {
+                const body = await response.text();
+                const contentType = response.headers.get('content-type') || '';
+                const preview = body.trim().slice(0, 240);
+
+                if (!response.ok) {
+                    throw new Error(`${context} failed with HTTP ${response.status}${preview ? `: ${preview}` : ''}`);
+                }
+
+                if (!contentType.includes('application/json')) {
+                    throw new Error(`${context} returned non-JSON content${preview ? `: ${preview}` : ''}`);
+                }
+
+                try {
+                    return JSON.parse(body);
+                } catch (error) {
+                    throw new Error(`${context} returned invalid JSON${preview ? `: ${preview}` : ''}`);
+                }
+            }
+        };
+
         // Global utility functions
         window.exportData = async function(format, filters = {}) {
             try {
@@ -719,23 +732,19 @@
                     })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
+                const result = await window.ActivitylogUi.parseJsonResponse(response, 'Exporting activities');
 
-                    if (result.download_url) {
-                        // Direct download
-                        window.location.href = result.download_url;
-                        if (window.notify) {
-                            window.notify.success('Export Complete', `Activities exported as ${format.toUpperCase()} file`);
-                        }
-                    } else if (result.job_id) {
-                        // Background job - poll for completion
-                        if (window.notify) {
-                            window.notify.info('Processing', 'Large export is being processed. You will be notified when ready.');
-                        }
+                if (result.download_url) {
+                    // Direct download
+                    window.location.href = result.download_url;
+                    if (window.notify) {
+                        window.notify.success('Export Complete', `Activities exported as ${format.toUpperCase()} file`);
                     }
-                } else {
-                    throw new Error('Export failed');
+                } else if (result.job_id) {
+                    // Background job - poll for completion
+                    if (window.notify) {
+                        window.notify.info('Processing', 'Large export is being processed. You will be notified when ready.');
+                    }
                 }
             } catch (error) {
                 console.error('Export error:', error);
@@ -763,17 +772,13 @@
                     })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    if (window.notify) {
-                        window.notify.success('Success', result.message || `View "${viewName}" saved successfully`);
-                    }
-
-                    // Trigger refresh of saved views
-                    window.dispatchEvent(new CustomEvent('saved-views-updated'));
-                } else {
-                    throw new Error('Failed to save view');
+                const result = await window.ActivitylogUi.parseJsonResponse(response, 'Saving view');
+                if (window.notify) {
+                    window.notify.success('Success', result.message || `View "${viewName}" saved successfully`);
                 }
+
+                // Trigger refresh of saved views
+                window.dispatchEvent(new CustomEvent('saved-views-updated'));
             } catch (error) {
                 console.error('Save view error:', error);
                 if (window.notify) {

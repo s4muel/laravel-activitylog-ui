@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-04-03
+
+### Fixed
+- Fixed frontend JSON parsing failures by surfacing non-JSON API responses with clearer diagnostics across activity, analytics, saved views, and export requests
+- Fixed Alpine.js null-handling issues when switching between table and timeline views
+- Fixed custom properties rendering when `activity.properties` is null in the timeline and activity detail modal
+- Fixed missing favicon 404s by only rendering favicon links when published assets are available
+
 ## [2.0.0] - 2026-04-03
 
 ### Breaking Changes

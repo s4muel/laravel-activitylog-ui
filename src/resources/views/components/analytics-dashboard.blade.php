@@ -330,11 +330,7 @@ document.addEventListener('alpine:init', () => {
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
+                const data = await window.ActivitylogUi.parseJsonResponse(response, 'Loading analytics dashboard');
 
                 if (data.success) {
                     this.stats = {

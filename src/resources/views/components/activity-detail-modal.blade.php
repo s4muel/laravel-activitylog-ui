@@ -170,7 +170,7 @@
                                 <div class="p-4">
                                     <div class="bg-gray-900 dark:bg-gray-900 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                                         <pre class="text-sm text-green-400 dark:text-green-300 whitespace-pre-wrap overflow-x-auto font-mono"
-                                             x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
+                                             x-text="JSON.stringify(Object.fromEntries(Object.entries(activity.properties || {}).filter(([k]) => k !== 'old' && k !== 'attributes')), null, 2)"></pre>
                                     </div>
                                 </div>
                             </div>

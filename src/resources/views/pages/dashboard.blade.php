@@ -143,7 +143,7 @@ function activityDashboard() {
 
             // Initialize event listeners first
             this.filterChangedHandler = (event) => {
-                this.currentFilters = event.detail;
+                this.currentFilters = event.detail || {};
                 this.currentPage = 1; // Reset to first page
                 this.loadActivities();
 
@@ -209,7 +209,7 @@ function activityDashboard() {
                 params.append('per_page', this.perPage);
 
                 // Add filters to params
-                Object.keys(this.currentFilters).forEach(key => {
+                Object.keys(this.currentFilters || {}).forEach(key => {
                     const value = this.currentFilters[key];
                     if (value !== null && value !== undefined && value !== '') {
                         if (Array.isArray(value)) {
@@ -233,11 +233,7 @@ function activityDashboard() {
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
+                const result = await window.ActivitylogUi.parseJsonResponse(response, 'Loading activities');
 
                 this.activities = result.data || [];
                 this.totalActivities = result.total || 0;
@@ -266,8 +262,10 @@ function activityDashboard() {
         },
 
         get hasActiveFilters() {
-            return Object.keys(this.currentFilters).some(key => {
-                const value = this.currentFilters[key];
+            const filters = this.currentFilters || {};
+
+            return Object.keys(filters).some(key => {
+                const value = filters[key];
                 return value !== '' && value !== null &&
                        (Array.isArray(value) ? value.length > 0 : true) &&
                        !(key === 'date_preset' && value === 'all');
@@ -332,7 +330,7 @@ function activityDashboard() {
                 params.append('per_page', this.perPage);
 
                 // Add filters to params
-                Object.keys(this.currentFilters).forEach(key => {
+                Object.keys(this.currentFilters || {}).forEach(key => {
                     const value = this.currentFilters[key];
                     if (value !== null && value !== undefined && value !== '') {
                         if (Array.isArray(value)) {
@@ -355,11 +353,7 @@ function activityDashboard() {
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
+                const result = await window.ActivitylogUi.parseJsonResponse(response, 'Loading more activities');
 
                 // Append new activities to existing ones for timeline view
                 if (result.data && result.data.length > 0) {
